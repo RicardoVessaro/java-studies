@@ -18,6 +18,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private final JwtService jwtService;
 
     /*
      * @NonNull: These parameters should not be null.
@@ -35,6 +36,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String authHeader = request.getHeader("Authorization");
 
         final String jwt;
+
+        final String userEmail;
+
         /*
          * If there is no auth header or "Bearer " on in then do nothing.
          */
@@ -47,5 +51,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
          * Begins in 7 because "Bearear " has 8 characters
          */
         jwt = authHeader.substring(7);
+        userEmail = jwtService.extractUsername(jwt);
     }
 }
