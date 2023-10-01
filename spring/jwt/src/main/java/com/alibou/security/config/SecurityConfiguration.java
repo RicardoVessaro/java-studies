@@ -26,28 +26,29 @@ public class SecurityConfiguration {
             /*
              * Disabling CSRF (We will talk about it in a different video) [Search for the video].
              */
-            .csrf()
-            .disable()
+            .csrf(csrf -> csrf.disable())
             /**
              * Whitelist endpoints are endpoints that don't require authentication like login and create account.
              * Authorizing any request in the Matchers
              */
-            .authorizeHttpRequests()
-            .requestMatchers("")
-            .permitAll()
-            /*
-             * Any other request should be authenticated.
-             */
-            .anyRequest()
-            .authenticated()
-            .and() /* And indicates new configuration */
-            .sessionManagement()
-            /*
-             * How we want to create our session.
-             * In this case stateless so every request is authenticated.
-             */
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and()
+            .authorizeHttpRequests(authHttp -> {
+                authHttp
+                    .requestMatchers("")
+                    .permitAll()
+                    /*
+                     * Any other request should be authenticated.
+                     */
+                    .anyRequest()
+                    .authenticated();
+            })
+            .sessionManagement(session -> {
+                session
+                    /*
+                     * How we want to create our session.
+                     * In this case stateless so every request is authenticated.
+                     */
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+            })
             .authenticationProvider(authenticationProvider)
             /*
              * Calling our filter before the UsernamePasswordAuthenticationFilter.
