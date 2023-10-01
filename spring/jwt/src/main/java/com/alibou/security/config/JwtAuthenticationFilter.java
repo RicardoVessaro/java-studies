@@ -1,5 +1,6 @@
 package com.alibou.security.config;
 
+import com.alibou.security.token.TokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +30,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      *  need to create our own implementation with our business rule.
      */
     private final UserDetailsService userDetailsService;
+    private final TokenRepository tokenRepository;
 
     /*
      * @NonNull: These parameters should not be null.
@@ -67,7 +69,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
          */
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-            if(jwtService.isTokenValid(jwt, userDetails)) {
+
+            // Checking if the given token is valid
+            var isTokenValid = tokenRepository.findByToken(jwt)
+                .map(t -> !t.isExpired() && !t.isRevoked())
+                .orElse(false);
+
+            if(jwtService.isTokenValid(jwt, userDetails) && isTokenValid) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     userDetails,
                     null, // null because we don't create credentials
