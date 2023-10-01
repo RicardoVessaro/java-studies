@@ -4,8 +4,10 @@ import com.alibou.security.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -26,8 +28,8 @@ public class ApplicationConfig {
     }
 
     /*
-     * The authentication provider is the data acces object (DAO)
-     *  which is responsible to fecth the user details and also
+     * The authentication provider is the data access object (DAO)
+     *  which is responsible to fetch the user details and also
      *  encode password and so on so forth so for this we use the
      *  DaoAuthenticationProvider (but there are other implementations
      */
@@ -45,6 +47,15 @@ public class ApplicationConfig {
         authProvider.setPasswordEncoder(passwordEncoder());
 
         return authProvider;
+    }
+
+    /*
+     * Responsible for manage the authentication.
+     * It is present in the injected AuthenticationConfiguration.
+     */
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
     @Bean
