@@ -1,6 +1,9 @@
 package com.alibou.security.auth;
 
 import com.alibou.security.config.JwtService;
+import com.alibou.security.token.Token;
+import com.alibou.security.token.TokenRepository;
+import com.alibou.security.token.TokenType;
 import com.alibou.security.user.Role;
 import com.alibou.security.user.User;
 import com.alibou.security.user.UserRepository;
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Service;
 public class AuthenticationService {
 
     private final UserRepository repository;
+    private final TokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
@@ -28,9 +32,11 @@ public class AuthenticationService {
             .role(Role.USER)
             .build();
 
-        repository.save(user);
+        var savedUser = repository.save(user);
 
         var jwtToken = jwtService.generateToken(user);
+
+        saveUserToken(savedUser, jwtToken);
 
         return AuthenticationResponse.builder()
             .token(jwtToken)
@@ -50,8 +56,22 @@ public class AuthenticationService {
 
         var jwtToken = jwtService.generateToken(user);
 
+        saveUserToken(user, jwtToken);
+
         return AuthenticationResponse.builder()
             .token(jwtToken)
             .build();
+    }
+
+    private void saveUserToken(User user, String jwtToken) {
+        // Creating and saving the generated token
+        var token = Token.builder()
+            .user(user)
+            .token(jwtToken)
+            .tokenType(TokenType.BEARER)
+            .revoked(false)
+            .expired(false)
+            .build();
+        tokenRepository.save(token);
     }
 }
