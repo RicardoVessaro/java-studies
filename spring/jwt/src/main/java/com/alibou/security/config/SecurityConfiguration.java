@@ -33,7 +33,11 @@ public class SecurityConfiguration {
              */
             .authorizeHttpRequests(authHttp -> {
                 authHttp
-                    .requestMatchers("")
+                    /*
+                     * Authorizing all the methods we have in the authorization controller.
+                     * There we have only authentication methods, nothing related with business logic.
+                     */
+                    .requestMatchers("/api/v1/auth/**")
                     .permitAll()
                     /*
                      * Any other request should be authenticated.
