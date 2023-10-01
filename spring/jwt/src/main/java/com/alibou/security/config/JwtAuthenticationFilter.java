@@ -6,6 +6,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -19,6 +22,11 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    /*
+     * Spring has its own implementation for UserDetailsService, but we
+     *  need to create our own implementation with our business rule.
+     */
+    private final UserDetailsService userDetailsService;
 
     /*
      * @NonNull: These parameters should not be null.
@@ -52,5 +60,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
          */
         jwt = authHeader.substring(7);
         userEmail = jwtService.extractUsername(jwt);
+        /**
+         * If the getAuthentication returns null means that the authentication wasn't done (The user is not connected yet).
+         */
+        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            UserDetails userDetails = this.userDetailService.loadUserByUsername(userEmail);
+        }
     }
 }
